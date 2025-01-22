@@ -49,16 +49,16 @@ def login(environ, start_response):
         if user and bcrypt.checkpw(password.encode('utf-8'), user[4]):
             # Store user info in session
             SESSION['user'] = {'id': user[0], 'first_name': user[1], 'last_name': user[2], 'email': user[3]}
-            return redirect('/update', start_response)
+            return redirect('/update', start_response)  # redirect to /update on success
         else:
-            print("Invalid credentials.")
-            html = render_template(template_name='login.html', path="templates", context={"error_message": "Invalid credentials."})
+            context = {"error_message": "Invalid credentials"}
+            html = render_template(template_name='login.html', path="templates", context=context)
             start_response('200 OK', [('Content-Type', 'text/html')])
             return [html.encode('utf-8')]
-
-    html = render_template(template_name='login.html', path="templates")
+    html = render_template(template_name='login.html', path="templates", context={"error_message": ""})
     start_response('200 OK', [('Content-Type', 'text/html')])
     return [html.encode('utf-8')]
+
 
 def register(environ, start_response):
     global CAPTCHA_ANSWER
@@ -74,11 +74,25 @@ def register(environ, start_response):
         password = form_data.get('password', [''])[0]
         captcha_input = form_data.get('captcha', [''])[0]
 
+        # Error checking for captcha input
+        try:
+            captcha_input = int(captcha_input)
+        except (ValueError, TypeError):
+            context = {
+                "error_message": "Invalid CAPTCHA input",
+                "captcha_question": generate_captcha()
+            }
+            html = render_template(template_name='register.html', path="templates", context=context)
+            start_response('200 OK', [('Content-Type', 'text/html')])
+            return [html.encode('utf-8')]
+
         # Checking captcha answer
-        if int(captcha_input) != CAPTCHA_ANSWER:
-            print("CAPTCHA failed. Regenerating CAPTCHA.")
-            captcha_question = generate_captcha()
-            html = render_template(template_name='register.html', path="templates", context={"captcha_question": captcha_question})
+        if CAPTCHA_ANSWER is None or captcha_input != CAPTCHA_ANSWER:
+            context = {
+                "error_message": "Incorrect CAPTCHA answer",
+                "captcha_question": generate_captcha()
+            }
+            html = render_template(template_name='register.html', path="templates", context=context)
             start_response('200 OK', [('Content-Type', 'text/html')])
             return [html.encode('utf-8')]
 
@@ -94,8 +108,11 @@ def register(environ, start_response):
             connection.commit()
             print("User registered successfully.")
         except sqlite3.IntegrityError as e:
-            print("Error inserting data into the database:", e)
-            html = render_template(template_name='register.html', path="templates", context={"error_message": "Email already in use."})
+            context = {
+                "error_message": "Email already in use.",
+                "captcha_question": generate_captcha()
+            }
+            html = render_template(template_name='register.html', path="templates", context=context)
             start_response('200 OK', [('Content-Type', 'text/html')])
             return [html.encode('utf-8')]
         finally:
@@ -104,8 +121,11 @@ def register(environ, start_response):
         return redirect('/login', start_response)
 
     captcha_question = generate_captcha()
-
-    html = render_template(template_name='register.html', path="templates", context={"captcha_question": captcha_question})
+    context = {
+        "captcha_question": captcha_question,
+        "error_message": ""
+    }
+    html = render_template(template_name='register.html', path="templates", context=context)
     start_response('200 OK', [('Content-Type', 'text/html')])
     return [html.encode('utf-8')]
 
