@@ -49,7 +49,7 @@ def login(environ, start_response):
         if user and bcrypt.checkpw(password.encode('utf-8'), user[4]):
             # Store user info in session
             SESSION['user'] = {'id': user[0], 'first_name': user[1], 'last_name': user[2], 'email': user[3]}
-            return redirect('/update', start_response)  # redirect to /update on success
+            return redirect('/update', start_response)
         else:
             context = {"error_message": "Invalid credentials"}
             html = render_template(template_name='login.html', path="templates", context=context)
