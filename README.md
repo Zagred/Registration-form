@@ -29,4 +29,5 @@ login.html: The login of users with credentials
 register.html: The registration with credentials and captcha
 update.html: The page where the logged-in user can update information.
 server.py: Handles all routing, logic for registration, login, update, and user sessions.
-users.py: File you will need to run in order to create the database. 
+users.py: File you will need to run in order to create the database.
+test_server.py: Unittest for the program
