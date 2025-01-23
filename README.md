@@ -1,5 +1,5 @@
 1. Technologies Used
--Python, SQLite, bcrypt, HTML, WSGI, Gunicorn
+Python, SQLite, bcrypt, HTML, WSGI, Gunicorn
 Requirements
 To run this project, you will need to prepare:
 Linux or Windows Subsystem for Linux (WSL) on Windows (because Gunicorn can be run only on Linux).
